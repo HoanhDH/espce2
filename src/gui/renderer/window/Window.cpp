@@ -214,7 +214,7 @@ void Window::DestroyImGui()
 	LOGF(VERBOSE, "Imgui Destroyed");
 }
 
-void Window::StartRender()
+void Window::PumpMessages()
 {
 	// handle windows messages
 	MSG msg;
@@ -225,8 +225,10 @@ void Window::StartRender()
 		if (msg.message == WM_QUIT)
 			shouldRun = false;
 	}
+}
 
-	// begin a new frame
+void Window::StartRender()
+{
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
@@ -247,9 +249,7 @@ void Window::EndRender()
 	// Render ImGui draw data.
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-	auto io = ImGui::GetIO();
-
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();

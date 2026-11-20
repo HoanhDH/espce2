@@ -14,7 +14,7 @@ public:
     static void Render();
 
 private:
-    ImGuiIO io;
+    ImVec2 display_size;
     ImFont* font;
     ImFont* font_merged_icons;
     ImDrawList* d;

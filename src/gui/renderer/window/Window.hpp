@@ -25,6 +25,7 @@ public:
 	static bool CreateImGui();
 	static void DestroyImGui();
 
+	static void PumpMessages();
 	static void StartRender();
 	static void EndRender();
 

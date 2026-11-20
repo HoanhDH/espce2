@@ -28,7 +28,7 @@ private:
     void DestroyImpl();
 
     void Render();
-    bool HandleState();
+    void HandleState();
     bool HandleWindowOrder();
 private:
     bool isRunning = true;

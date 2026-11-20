@@ -36,6 +36,7 @@ jobs:
         run: |
           mkdir release
           xcopy x64\Release\* release\ /E /I /Y
+          Get-ChildItem release -Recurse -File -Filter *.pdb | Remove-Item
           copy README.md release\README.md
           copy LICENSE release\LICENSE
           mkdir release\scripts

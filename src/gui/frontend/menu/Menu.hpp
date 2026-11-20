@@ -1,27 +1,4 @@
 #pragma once
-#include "assets/fonts/Icons.h"
-
-enum Tab {
-    PLAYER,
-    WORLD,
-    SETTINGS,
-    TRIGGER_DEMO
-};
-
-struct TabItem
-{
-    Tab id;
-    std::string label;
-    std::string icon;
-};
-
-static const TabItem tabs[] =
-{
-    { Tab::PLAYER,      "Player",   Icons::PERSON },
-    { Tab::WORLD,       "World",    Icons::GLOBE },
-    { Tab::SETTINGS,    "Settings", Icons::SETTINGS },
-    { Tab::TRIGGER_DEMO, "Trigger Demo", Icons::SETTINGS }
-};
 
 class Menu {
 public:

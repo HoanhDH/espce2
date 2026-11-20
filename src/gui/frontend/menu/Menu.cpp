@@ -6,8 +6,30 @@
 #include "gui/renderer/window/Window.hpp" // Circular dependency
 #include "gui/frontend/menu/TriggerHotkey.hpp"
 #include "practice/ClickPractice.hpp"
-#include "assets/fonts/Icons.h";
+#include "assets/fonts/Icons.h"
 
+namespace {
+enum Tab {
+    PLAYER,
+    WORLD,
+    SETTINGS,
+    TRIGGER_DEMO
+};
+
+struct TabItem
+{
+    Tab id;
+    std::string label;
+};
+
+const TabItem tabs[] =
+{
+    { Tab::PLAYER, std::string(Icons::PERSON) + " Player" },
+    { Tab::WORLD, std::string(Icons::GLOBE) + " World" },
+    { Tab::SETTINGS, std::string(Icons::SETTINGS) + " Settings" },
+    { Tab::TRIGGER_DEMO, std::string(Icons::SETTINGS) + " Trigger Demo" }
+};
+}
 
 bool Menu::Init() {
 	return GetInstance().InitImpl();
@@ -40,8 +62,7 @@ void Menu::RenderImpl() {
 	if (!isSetup)
 		return;
 
-	static auto io = ImGui::GetIO();
-	static auto screen = io.DisplaySize;
+	const ImVec2 screen = ImGui::GetIO().DisplaySize;
 	static auto color_flags = ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_None;
 
 #ifdef _DEBUG
@@ -78,7 +99,7 @@ void Menu::RenderImpl() {
 						ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
 					}
 
-					if (ImGui::Button((tab.icon + " " + tab.label).c_str(), ImVec2(-1, 28)))
+					if (ImGui::Button(tab.label.c_str(), ImVec2(-1, 28)))
 						active_tab = tab.id;
 
 					if (is_active) 

@@ -70,14 +70,23 @@ void Renderer::DestroyImpl() {
 
 void Renderer::ThreadImpl() {
     while (isRunning) {
-        Render();
+        Window::PumpMessages();
+        if (!Window::shouldRun)
+            break;
 
-        // If the game is not focused dont do states, 
-        // or will start focusing game & overlay
-        if (this->isFocused && HandleState())
-            continue; // It will cause flickering if we handle window order after window closes
-
+        const bool wasFocused = isFocused;
         HandleWindowOrder();
+        if (!isRunning)
+            break;
+
+        // Give the widgets one frame to clear focus-dependent state on blur.
+        if (isFocused || wasFocused)
+            Render();
+
+        if (isFocused)
+            HandleState();
+        else
+            MsgWaitForMultipleObjectsEx(0, nullptr, 50, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
     }
 
     // Once exited, destroy everything
@@ -98,9 +107,7 @@ void Renderer::Render() {
     Window::EndRender();
 }
 
-bool Renderer::HandleState() {
-    isRunning = Window::shouldRun; // From the window event handler
-
+void Renderer::HandleState() {
     static bool was_holding = false;
 
     bool pressed_insert = (GetAsyncKeyState(VK_INSERT) & 0x8000);
@@ -132,7 +139,6 @@ bool Renderer::HandleState() {
         this->isRunning = false;
 
     was_holding = pressed_insert || pressed_rshift;
-    return should_toggle;
 }
 
 bool Renderer::HandleWindowOrder() {
@@ -142,17 +148,21 @@ bool Renderer::HandleWindowOrder() {
         return false;
 
     // Check if game window is still valid, if not, most likely game closed
-    if (!IsWindow(p->hwnd_))
+    if (!IsWindow(p->hwnd_)) {
         this->isRunning = false;
+        return false;
+    }
 
     static bool overlay_visible = true;
     auto foreground = GetForegroundWindow();
     this->isFocused = (foreground == Window::hwnd || foreground == p->hwnd_);
 
-    if (!this->isFocused && overlay_visible) {
-        LOGF(VERBOSE, "Hiding overlay window as the game its not focused");
-        ShowWindow(Window::hwnd, SW_HIDE);
-        overlay_visible = false;
+    if (!this->isFocused) {
+        if (overlay_visible) {
+            LOGF(VERBOSE, "Hiding overlay window as the game its not focused");
+            ShowWindow(Window::hwnd, SW_HIDE);
+            overlay_visible = false;
+        }
         return true;
     }
 

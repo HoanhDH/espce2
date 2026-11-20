@@ -3,6 +3,13 @@
 ###############################################################################
 * text=auto
 
+# Omit archived screenshots and dependency documentation/tests from source downloads.
+/.github/old export-ignore
+/src/external/curl/docs export-ignore
+/src/external/curl/tests export-ignore
+/src/external/json/docs export-ignore
+/src/external/json/tests export-ignore
+
 ###############################################################################
 # Set default behavior for command prompt diff.
 #

@@ -54,7 +54,7 @@ void Esp::RenderImpl() {
 	
 	ImGui::PushFont(this->font);
 
-	this->io = ImGui::GetIO();
+	this->display_size = ImGui::GetIO().DisplaySize;
 	this->d = ImGui::GetBackgroundDrawList();
 
 	this->matrix = game.view_matrix;
@@ -95,7 +95,7 @@ void Esp::RenderPlayer(Player player, bool mate) {
 	// Needed for flags & item sizing, so even if the box is not enabled
 	// Should be calculated
 	std::pair<Vec2_t, Vec2_t> bounds;
-	if (!player.GetBounds(matrix, io.DisplaySize, bounds))
+	if (!player.GetBounds(matrix, display_size, bounds))
 		return;
 
 	// Causes hp bars across the screen when they respawn
@@ -136,11 +136,11 @@ void Esp::RenderPlayerBones(Player player, bool mate) {
 		const auto& bone2 = player.bone_list[second];
 
 		Vec2_t scb1;
-		if (!matrix.wts(bone1.pos, io.DisplaySize, scb1))
+		if (!matrix.wts(bone1.pos, display_size, scb1))
 			continue;
 
 		Vec2_t scb2;
-		if (!matrix.wts(bone2.pos, io.DisplaySize, scb2))
+		if (!matrix.wts(bone2.pos, display_size, scb2))
 			continue;
 
 		d->AddLine(
@@ -159,7 +159,7 @@ void Esp::RenderPlayerTracker(Player player, std::pair<Vec2_t, Vec2_t> bounds, b
 	auto head_bone = player.bone_list[bone_index::head];
 
 	Vec2_t head;
-	if (!matrix.wts(head_bone.pos, io.DisplaySize, head))
+	if (!matrix.wts(head_bone.pos, display_size, head))
 		return;
 
 	auto width = bounds.second.x - bounds.first.x;
@@ -409,7 +409,7 @@ void Esp::RenderBombBox(Bomb bomb) {
 	int visible_count = 0;
 
 	for (int i = 0; i < 8; ++i) {
-		if (matrix.wts(corners[i], io.DisplaySize, projected[i])) {
+		if (matrix.wts(corners[i], display_size, projected[i])) {
 			visible[i] = true;
 			visible_count++;
 		}
@@ -435,7 +435,7 @@ void Esp::RenderBombBox(Bomb bomb) {
 	}
 
 	Vec2_t screen;
-	if (!matrix.wts(bomb.pos + Vec3_t(0, 0, 8), io.DisplaySize, screen))
+	if (!matrix.wts(bomb.pos + Vec3_t(0, 0, 8), display_size, screen))
 		return;
 
 	ImGui::PushFont(this->font_merged_icons);
@@ -471,8 +471,8 @@ void Esp::RenderCrosshair(Player local)
 		return;
 
 	ImVec2 center(
-		floorf(io.DisplaySize.x * 0.5f),
-		floorf(io.DisplaySize.y * 0.5f));
+		floorf(display_size.x * 0.5f),
+		floorf(display_size.y * 0.5f));
 
 	constexpr float size = 6.f;
 	constexpr float thickness = 1.0f;
@@ -495,7 +495,7 @@ void Esp::RenderPlayerTracers(Player source, Player player, bool mate) {
 		return;
 
 	Vec2_t screenPos;
-	bool projected = matrix.wts(player.pos, io.DisplaySize, screenPos, false);
+	bool projected = matrix.wts(player.pos, display_size, screenPos, false);
 
 	if (!projected)
 	{
@@ -522,18 +522,18 @@ void Esp::RenderPlayerTracers(Player source, Player player, bool mate) {
 			viewDir.y /= len;
 		}
 
-		screenPos.x = io.DisplaySize.x * 0.5f + viewDir.x * io.DisplaySize.x * 0.5f;
-		screenPos.y = io.DisplaySize.y * 0.5f - viewDir.y * io.DisplaySize.y * 0.5f;
+		screenPos.x = display_size.x * 0.5f + viewDir.x * display_size.x * 0.5f;
+		screenPos.y = display_size.y * 0.5f - viewDir.y * display_size.y * 0.5f;
 
 		float margin = 10.f;
-		screenPos.x = std::clamp(screenPos.x, margin, io.DisplaySize.x - margin);
-		screenPos.y = std::clamp(screenPos.y, margin, io.DisplaySize.y - margin);
+		screenPos.x = std::clamp(screenPos.x, margin, display_size.x - margin);
+		screenPos.y = std::clamp(screenPos.y, margin, display_size.y - margin);
 	}
 
 	auto color = mate ? cfg::esp::colors::tracer_team : cfg::esp::colors::tracer_enemy;
 
 	d->AddLine(
-		Vec2_t(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f),
+		Vec2_t(display_size.x * 0.5f, display_size.y * 0.5f),
 		screenPos,
 		ImColor(color),
 		1.0f

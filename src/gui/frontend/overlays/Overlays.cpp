@@ -31,9 +31,6 @@ bool Overlays::InitImpl() {
 	static const ImWchar icon_ranges[] = { 0xE000, 0xE046, 0 };
 	io.Fonts->AddFontFromMemoryTTF(weapon_icon_font, weapon_icon_font_len, 12.f, &merge_icon_cfg, icon_ranges);
 
-    // Pre allocate buffer
-    this->vel_buffer.resize(static_cast<size_t>(cfg::world::velocity::sample_rate * cfg::world::velocity::sample_length));
-
     return true;
 }
 
@@ -380,11 +377,8 @@ void Overlays::RenderSpeedChart() {
     auto& pos = cfg::world::velocity::pos;
     auto& size = cfg::world::velocity::size;
 
-    int rate = cfg::world::velocity::sample_rate;
-    float length = cfg::world::velocity::sample_length;
-
-    static int prev_rate = rate;
-    static float prev_length = length;
+    const int rate = std::clamp(cfg::world::velocity::sample_rate, 1, 100);
+    const float length = std::clamp(cfg::world::velocity::sample_length, 1.0f, 20.0f);
 
     float left = pos.x + padding;
     float right = pos.x + size.x - padding;
@@ -408,34 +402,32 @@ void Overlays::RenderSpeedChart() {
         {
             pos = ImGui::GetWindowPos() + ImVec2(0, altitude_padding);
             size = ImGui::GetWindowSize() - ImVec2(0, height_padding);
-            ImGui::End();
         }
+        ImGui::End();
     }
 
-    // Cache menu values and resize when changed
-    if (prev_rate != rate || prev_length != length) {
-        prev_rate = rate;
-        prev_length = length;
-
-        vel_buffer.resize(static_cast<size_t>(rate * length));
+    const size_t buff_size = static_cast<size_t>(rate * length);
+    if (vel_buffer.size() != buff_size) {
+        vel_buffer.resize(buff_size);
+        vel_index %= buff_size;
     }
 
     Vec2_t speed_2d(local.vel.x, local.vel.y);
     int speed = floor(speed_2d.len());
 
     vel_accumulator += io.DeltaTime;
-    size_t buff_size = vel_buffer.size();
+    const float sample_interval = 1.0f / rate;
 
-    std::vector<ImVec2> points;
-    points.reserve(buff_size);
-
-    float sample_interval = 1.0f / rate;
-
-    while (vel_accumulator >= sample_interval)
-    {
-        vel_accumulator -= sample_interval;
-        vel_buffer.at(vel_index % buff_size) = speed;
-        vel_index = (vel_index + 1) % buff_size;
+    // After a long pause, every visible sample has the same current value.
+    if (vel_accumulator >= buff_size * sample_interval) {
+        std::fill(vel_buffer.begin(), vel_buffer.end(), speed);
+        vel_accumulator = std::fmod(vel_accumulator, sample_interval);
+    } else {
+        while (vel_accumulator >= sample_interval) {
+            vel_accumulator -= sample_interval;
+            vel_buffer[vel_index] = speed;
+            vel_index = (vel_index + 1) % buff_size;
+        }
     }
 
     int max_speed = 1;
@@ -443,7 +435,7 @@ void Overlays::RenderSpeedChart() {
         max_speed = std::max(max_speed, v);
 
     for (size_t i = 0; i < buff_size; ++i) {
-        float t = i / float(buff_size - 1);
+        float t = buff_size > 1 ? i / float(buff_size - 1) : 0.0f;
 
         float x = left + t * width;
 
@@ -452,16 +444,10 @@ void Overlays::RenderSpeedChart() {
 
         float y = bottom - (normalized * height);
 
-        points.emplace_back(x, y);
+        d->PathLineTo(ImVec2(x, y));
     }
 
-    d->AddPolyline(
-        points.data(),
-        static_cast<int>(points.size()),
-        IM_COL32(255, 255, 255, 255),
-        ImDrawFlags_None,
-        1.0f
-    );
+    d->PathStroke(IM_COL32(255, 255, 255, 255), ImDrawFlags_None, 1.0f);
 
     auto center = ImVec2(
         pos.x + size.x / 2,
