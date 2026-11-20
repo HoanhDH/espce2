@@ -3,6 +3,10 @@
 #include "core/engine/Engine.hpp"
 #include "core/offsets/Dumper.hpp"
 
+bool Bomb::PlantedDataAvailable() {
+	return offsets::plantedC4 != 0;
+}
+
 bool Bomb::Update() {
 
 	auto p = Engine::GetProcess();

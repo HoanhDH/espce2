@@ -11,6 +11,7 @@ public:
     Bomb() {};
 
     bool Update();
+    static bool PlantedDataAvailable();
 public:
     Vec3_t pos;
     uintptr_t carrier = 0;

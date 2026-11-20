@@ -1,20 +1,30 @@
 #include "Config.hpp"
 
 bool Config::Read() {
-	return GetInstance().ReadImpl();
+	auto& config = GetInstance();
+	config.allowSave = config.ReadImpl();
+	return config.allowSave;
 }
 
 bool Config::Write() {
-	return GetInstance().WriteImpl();
+	auto& config = GetInstance();
+	return config.allowSave && config.WriteImpl();
 }
 
 bool Config::ReadImpl() {
 	std::ifstream f("config.json");
 
-	if (!f.good()) {
-		LOGF(FATAL, "Configuration file does not exist, creating a new one");
-		WriteImpl();
-		return false;
+	if (!f.is_open()) {
+		std::error_code error;
+		if (std::filesystem::exists("config.json", error) || error) {
+			LOGF(WARNING, "Cannot open config.json for reading");
+			return false;
+		}
+		if (!WriteImpl())
+			return false;
+
+		LOGF(INFO, "Created config.json with default settings");
+		return true;
 	}
 
 	json data;
@@ -22,13 +32,14 @@ bool Config::ReadImpl() {
 		data = json::parse(f);
 	}
 	catch (const std::exception& e) {
-		LOGF(FATAL, "Failed to parse configuration file");
-		WriteImpl();
+		LOGF(WARNING, "Cannot parse config.json: {}", e.what());
 		return false;
 	}
 
-	if (data.empty())
+	if (!data.is_object() || data.empty()) {
+		LOGF(WARNING, "Expected a non-empty settings object in config.json");
 		return false;
+	}
 
 	try {
 		// general
@@ -142,8 +153,7 @@ bool Config::ReadImpl() {
 		//cfg::settings::open_menu_key = data["utils"].value("open_menu_key", 0);
 	}
 	catch (const std::exception& e) {
-		LOGF(FATAL, "Failed to parse configuration");
-		WriteImpl();
+		LOGF(WARNING, "Invalid setting in config.json: {}", e.what());
 		return false;
 	}
 
@@ -152,8 +162,6 @@ bool Config::ReadImpl() {
 }
 
 bool Config::WriteImpl() {
-	std::ofstream f("config.json");
-
 	json data;
 
 	data["enabled"] = cfg::enabled;
@@ -261,10 +269,19 @@ bool Config::WriteImpl() {
 	data["utils"]["free_cpu"] = cfg::settings::free_cpu;
 	//data["utils"]["open_menu_key"] = cfg::settings::open_menu_key;
 
-	f << std::setw(4) << data << std::endl;
+	std::ofstream f("config.json");
+	if (!f.is_open()) {
+		LOGF(WARNING, "Cannot open config.json for writing in the working directory");
+		return false;
+	}
+	f << std::setw(4) << data << '\n';
 	f.close();
+	if (!f) {
+		LOGF(WARNING, "Could not finish writing config.json");
+		return false;
+	}
 
-	LOGF(VERBOSE, "Writting configuration to file");
+	LOGF(VERBOSE, "Wrote config.json");
 
 	return true;
 }

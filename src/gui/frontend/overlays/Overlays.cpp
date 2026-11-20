@@ -624,7 +624,7 @@ void Overlays::RenderRadar() {
 }
 
 void Overlays::RenderBomb() {
-    if (!cfg::world::bomb::location && !cfg::world::bomb::timer)
+    if (!Bomb::PlantedDataAvailable() || (!cfg::world::bomb::location && !cfg::world::bomb::timer))
         return;
 
     auto& io = ImGui::GetIO();

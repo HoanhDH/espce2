@@ -38,7 +38,7 @@ bool Engine::InitImpl() {
     }
 
     if (!Config::Read())
-        LOGF(WARNING, "Failed to parse config, using default values");
+        LOGF(WARNING, "Settings will not be saved this session. Check config.json and its folder permissions, then restart.");
 
 #ifdef _DEBUG
     if (!cfg::dev::console)

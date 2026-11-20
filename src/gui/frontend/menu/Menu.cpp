@@ -266,13 +266,18 @@ void Menu::RenderImpl() {
 				{
 					ImGui::Text("Bomb");
 					ImGui::Separator();
+					const bool planted_data_available = Bomb::PlantedDataAvailable();
+					if (!planted_data_available)
+						ImGui::TextWrapped("Planted C4 data is unavailable for this game build.");
+					ImGui::BeginDisabled(!planted_data_available);
 					{
 						ImGui::Checkbox("Bomb ESP", &cfg::esp::bomb);
 						ImGui::SameLine();
 						ImGui::ColorEdit4("Bomb color", cfg::esp::colors::bomb.data(), color_flags);
+						ImGui::Checkbox("Bomb Location", &cfg::world::bomb::location);
+						ImGui::Checkbox("Bomb Timer", &cfg::world::bomb::timer);
 					}
-					ImGui::Checkbox("Bomb Location", &cfg::world::bomb::location);
-					ImGui::Checkbox("Bomb Timer", &cfg::world::bomb::timer);
+					ImGui::EndDisabled();
 
 					ImGui::Spacing();
 
