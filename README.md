@@ -6,11 +6,15 @@ Simple external ESP for Counter-Strike 2. After years of development the codebas
 
 Run `cs2-external-esp.exe --trigger-demo` to open the native practice window. Hold F6 over Head or Body for 150 ms to send one left click to that button. Release F6 before the next click. The counter updates when the button receives the click. To use your configured hotkey, delay, zone and activation mode, choose **Open offline click practice** in the **Trigger Demo** tab.
 
+The **Mouse settings** section displays the sensitivity saved in the active Steam account's CS2 user configuration. If automatic detection is unavailable, use **Open .vcfg...** to select your `cs2_user_convars_0_slot0.vcfg`. Changes made in the game appear here after CS2 saves them and you reopen the file or practice window.
+
+For a mouse DPI estimate, mark a straight horizontal distance of 10 cm on your mouse pad. Set the mouse at one end, select **Measure DPI**, move to the other end without lifting it, and press **Space**. The dialog estimates DPI from relative mouse movement over that distance. Switching windows cancels the measurement.
+
 To build just the offline demo from the repository root using a Visual Studio Developer Command Prompt:
 
 ```bat
 rc /fo trigger-demo.res src\gui\frontend\menu\practice\ClickPractice.rc
-cl /EHsc /std:c++20 tools\trigger-demo.cpp trigger-demo.res user32.lib
+cl /EHsc /std:c++20 tools\trigger-demo.cpp trigger-demo.res user32.lib advapi32.lib comdlg32.lib
 trigger-demo.exe
 ```
 

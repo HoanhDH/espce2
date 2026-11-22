@@ -1,14 +1,20 @@
 #include <windows.h>
 #include "Resource.h"
 
-IDD_CLICK_PRACTICE DIALOGEX 0, 0, 230, 128
+IDD_CLICK_PRACTICE DIALOGEX 0, 0, 266, 207
 STYLE DS_MODALFRAME | DS_CENTER | DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Offline click practice"
 FONT 9, "Segoe UI"
 BEGIN
-    LTEXT       "", IDC_PRACTICE_HELP, 8, 8, 214, 25
-    PUSHBUTTON  "Head", IDC_PRACTICE_HEAD, 92, 34, 46, 18
-    PUSHBUTTON  "Body", IDC_PRACTICE_BODY, 76, 55, 78, 28
-    LTEXT       "Clicks received: 0", IDC_PRACTICE_STATUS, 8, 94, 214, 10
-    PUSHBUTTON  "Close", IDCANCEL, 172, 106, 50, 14
+    LTEXT       "", IDC_PRACTICE_HELP, 8, 8, 250, 22
+    PUSHBUTTON  "Head", IDC_PRACTICE_HEAD, 110, 32, 46, 18
+    PUSHBUTTON  "Body", IDC_PRACTICE_BODY, 94, 53, 78, 28
+    LTEXT       "Clicks received: 0", IDC_PRACTICE_STATUS, 8, 86, 250, 10
+    GROUPBOX    "Mouse settings", -1, 8, 101, 250, 78
+    LTEXT       "", IDC_MOUSE_SENSITIVITY, 16, 115, 162, 13
+    PUSHBUTTON  "Open .vcfg...", IDC_SENSITIVITY_FILE, 181, 112, 69, 15
+    LTEXT       "Mouse DPI: unmeasured", IDC_MOUSE_DPI, 16, 137, 162, 13
+    PUSHBUTTON  "Measure DPI", IDC_MEASURE_DPI, 181, 133, 69, 15
+    LTEXT       "For a DPI estimate, measure a straight 10 cm movement with a ruler.", IDC_DPI_GUIDE, 16, 153, 234, 22
+    PUSHBUTTON  "Close", IDCANCEL, 208, 185, 50, 14
 END
